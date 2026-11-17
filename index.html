@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genética · Quadro de Punnett e Hardy-Weinberg</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --card2:#273449; --txt:#e2e8f0;
+    --muted:#94a3b8; --accent:#38bdf8; --accent2:#22c55e;
+    --dom:#f59e0b; --rec:#a78bfa; --erro:#ef4444; --borda:#334155;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Segoe UI',system-ui,sans-serif;
+    background:linear-gradient(160deg,#0f172a,#1e1b4b); color:var(--txt);
+    min-height:100vh; padding:16px;
+  }
+  h1{font-size:1.5rem; text-align:center; margin:8px 0 4px;}
+  h2{font-size:1.15rem; margin:0 0 10px; color:var(--accent);}
+  h3{font-size:1rem; margin:14px 0 6px; color:var(--accent2);}
+  .sub{text-align:center; color:var(--muted); font-size:.9rem; margin-bottom:18px;}
+  .abas{display:flex; gap:8px; justify-content:center; margin-bottom:16px; flex-wrap:wrap;}
+  .abas button{
+    background:var(--card); color:var(--txt); border:1px solid var(--borda);
+    padding:10px 18px; border-radius:999px; cursor:pointer; font-size:.95rem;
+    transition:.2s;
+  }
+  .abas button.ativa{background:var(--accent); color:#0f172a; font-weight:700; border-color:var(--accent);}
+  .painel{display:none; max-width:900px; margin:0 auto;}
+  .painel.ativo{display:block;}
+  .card{
+    background:var(--card); border:1px solid var(--borda); border-radius:14px;
+    padding:16px; margin-bottom:14px;
+  }
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+  label{display:block; font-size:.85rem; color:var(--muted); margin-bottom:4px;}
+  input, select{
+    width:100%; padding:10px; border-radius:8px; border:1px solid var(--borda);
+    background:var(--card2); color:var(--txt); font-size:1rem;
+  }
+  input:focus, select:focus{outline:2px solid var(--accent);}
+  .caixas{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
+  .caixas input{text-align:center; font-size:1.3rem; font-weight:700; text-transform:none;}
+  .botoes{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+  button.acao{
+    background:var(--accent); color:#0f172a; border:none; padding:12px 22px;
+    border-radius:10px; font-weight:700; font-size:1rem; cursor:pointer;
+    transition:.2s;
+  }
+  button.acao:hover{filter:brightness(1.1);}
+  button.sec{
+    background:transparent; color:var(--txt); border:1px solid var(--borda);
+    padding:12px 22px; border-radius:10px; cursor:pointer;
+  }
+  /* Quadro de Punnett */
+  .punnett{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:6px;
+    max-width:360px; margin:14px auto;
+  }
+  .punnett div{
+    background:var(--card2); border:1px solid var(--borda); border-radius:8px;
+    padding:14px 6px; text-align:center; font-weight:700; font-size:1.1rem;
+  }
+  .punnett .cab{background:transparent; border:none; color:var(--muted); font-size:.9rem; font-weight:400;}
+  .punnett .cel{background:#0b3b52; border-color:var(--accent); color:#7dd3fc;}
+  .celula.dom{color:var(--dom);}
+  .celula.rec{color:var(--rec);}
+  /* Resultados */
+  .resultado{margin-top:14px;}
+  .linha{
+    display:flex; justify-content:space-between; gap:10px;
+    padding:8px 0; border-bottom:1px dashed var(--borda); font-size:.95rem;
+  }
+  .linha:last-child{border-bottom:none;}
+  .linha b{color:var(--accent);}
+  .destaque{
+    background:var(--card2); border-left:4px solid var(--accent2);
+    padding:12px; border-radius:8px; margin-top:10px; font-size:.92rem;
+    line-height:1.5;
+  }
+  .aviso{
+    background:#3b2a0a; border-left:4px solid var(--dom);
+    padding:12px; border-radius:8px; margin-top:10px; font-size:.9rem;
+    line-height:1.5; color:#fcd34d;
+  }
+  .erro{
+    background:#3b0a0a; border-left:4px solid var(--erro);
+    padding:12px; border-radius:8px; margin-top:10px; font-size:.9rem;
+    color:#fca5a5; display:none;
+  }
+  .erro.visivel{display:block;}
+  .texto-didatico{font-size:.92rem; line-height:1.6; color:var(--muted);}
+  .texto-didatico strong{color:var(--txt);}
+  table{width:100%; border-collapse:collapse; font-size:.88rem; margin-top:8px;}
+  th,td{padding:8px; border-bottom:1px solid var(--borda); text-align:left;}
+  th{color:var(--accent); font-weight:600;}
+  .mini-quiz{background:var(--card2); padding:12px; border-radius:8px; margin-top:10px;}
+  .mini-quiz details{margin-top:8px;}
+  .mini-quiz summary{cursor:pointer; color:var(--accent); font-weight:600;}
+  .fracao{font-variant-numeric:tabular-nums;}
+  .rodape{text-align:center; color:var(--muted); font-size:.8rem; margin-top:20px;}
+</style>
+</head>
+<body>
+
+<h1>🧬 Genética Interativa</h1>
+<p class="sub">Quadro de Punnett · 1ª Lei de Mendel · Hardy-Weinberg</p>
+
+<div class="abas">
+  <button class="ativa" onclick="abrirAba('punnett', this)">Quadro de Punnett</button>
+  <button onclick="abrirAba('hardy', this)">Hardy-Weinberg</button>
+  <button onclick="abrirAba('teoria', this)">Teoria & Quiz</button>
+</div>
+
+<!-- ================= ABA 1 · PUNNETT ================= -->
+<div id="punnett" class="painel ativo">
+
+  <div class="card">
+    <h2>1. Escolha o gene e os genitores</h2>
+
+    <div class="grid2" style="margin-bottom:12px;">
+      <div>
+        <label>Letra do gene (ex.: A, B, D)</label>
+        <input id="txtLetra" maxlength="1" value="A" oninput="sincronizarSpinners()">
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <label>Genitor de cima (colunas)</label>
+        <select id="spCima" onchange="aplicarSpinner('cima')">
+          <option value="Homozigoto dominante">Homozigoto dominante (AA)</option>
+          <option value="Heterozigoto">Heterozigoto (Aa)</option>
+          <option value="Homozigoto recessivo">Homozigoto recessivo (aa)</option>
+        </select>
+      </div>
+      <div>
+        <label>Genitor da esquerda (linhas)</label>
+        <select id="spEsq" onchange="aplicarSpinner('esq')">
+          <option value="Homozigoto dominante">Homozigoto dominante (AA)</option>
+          <option value="Heterozigoto">Heterozigoto (Aa)</option>
+          <option value="Homozigoto recessivo">Homozigoto recessivo (aa)</option>
+        </select>
+      </div>
+    </div>
+
+    <h3>Alelos (editáveis manualmente)</h3>
+    <div class="caixas">
+      <div><label>T1 (cima)</label><input id="T1" maxlength="1" value="A"></div>
+      <div><label>T2 (cima)</label><input id="T2" maxlength="1" value="A"></div>
+      <div><label>T3 (esq.)</label><input id="T3" maxlength="1" value="A"></div>
+      <div><label>T4 (esq.)</label><input id="T4" maxlength="1" value="A"></div>
+    </div>
+
+    <div class="botoes">
+      <button class="acao" onclick="calcularPunnett()">Calcule</button>
+      <button class="sec" onclick="limparPunnett()">Limpar</button>
+    </div>
+
+    <div id="erroPunnett" class="erro"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Quadro de Punnett</h2>
+    <div class="punnett" id="quadro">
+      <div class="cab"></div><div class="cab" id="cab1">A</div><div class="cab" id="cab2">A</div>
+      <div class="cab" id="cab3">A</div><div class="cel" id="cel1">—</div><div class="cel" id="cel2">—</div>
+      <div class="cab" id="cab4">A</div><div class="cel" id="cel3">—</div><div class="cel" id="cel4">—</div>
+    </div>
+
+    <div class="resultado" id="resPunnett" style="display:none;">
+      <h3>Genótipos</h3>
+      <div id="listaGenotipos"></div>
+      <h3>Razão genotípica</h3>
+      <div class="linha"><span>Proporção</span><b id="razaoGeno">—</b></div>
+      <h3>Fenótipo</h3>
+      <div class="linha"><span>Dominante : recessivo</span><b id="razaoFeno">—</b></div>
+      <div class="destaque" id="comentarioCruzamento"></div>
+    </div>
+
+    <div class="aviso">
+      <strong>Atenção:</strong> 25% é uma <strong>probabilidade</strong> para cada fecundação, não uma garantia.
+      Um casal com 4 filhos pode ter 0, 1, 2 ou todos com o fenótipo recessivo.
+      As proporções 3:1 e 1:2:1 aparecem quando há <strong>muitos</strong> descendentes.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3. Explicação passo a passo</h2>
+    <div class="texto-didatico" id="passoAPasso">
+      <p>Escolha os genótipos e toque em <em>Calcule</em> para ver a explicação.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ABA 2 · HARDY-WEINBERG ================= -->
+<div id="hardy" class="painel">
+  <div class="card">
+    <h2>Hardy-Weinberg</h2>
+    <p class="texto-didatico">
+      A lei descreve populações em equilíbrio: as frequências dos alelos e dos genótipos se mantêm
+      de geração em geração. Se <strong>p</strong> é a frequência do alelo dominante e <strong>q</strong>
+      a do recessivo, então <strong>p + q = 1</strong> e <strong>p² + 2pq + q² = 1</strong>.
+    </p>
+
+    <div class="grid2" style="margin-top:12px;">
+      <div>
+        <label>O que você conhece?</label>
+        <select id="spModo">
+          <option value="p">Conheço p</option>
+          <option value="q">Conheço q</option>
+          <option value="q2">Conheço a frequência de aa (q²)</option>
+        </select>
+      </div>
+      <div>
+        <label>Valor (0 a 1, ou 0 a 100%)</label>
+        <input id="txtValor" type="number" step="any" placeholder="ex.: 0,3 ou 30">
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:12px;">
+      <div>
+        <label>Tamanho da população (opcional)</label>
+        <input id="txtPopulacao" type="number" placeholder="ex.: 1000">
+      </div>
+    </div>
+
+    <div class="botoes">
+      <button class="acao" onclick="calcularHardy()">Calcular</button>
+      <button class="sec" onclick="limparHardy()">Limpar</button>
+      <button class="sec" onclick="toggleCondicoes()">Quando vale a lei?</button>
+    </div>
+
+    <div id="erroHardy" class="erro"></div>
+
+    <div id="resHardy" class="resultado" style="display:none;">
+      <div class="linha"><span>p</span><b id="h_p">—</b></div>
+      <div class="linha"><span>q</span><b id="h_q">—</b></div>
+      <div class="linha"><span>AA (p²)</span><b id="h_AA">—</b></div>
+      <div class="linha"><span>Aa (2pq)</span><b id="h_Aa">—</b></div>
+      <div class="linha"><span>aa (q²)</span><b id="h_aa">—</b></div>
+      <div class="linha"><span>Soma</span><b id="h_soma">—</b></div>
+      <div class="linha" id="linhaIndiv" style="display:none;"><span>Indivíduos Aa</span><b id="h_indiv">—</b></div>
+      <div class="destaque" id="comentarioHardy"></div>
+      <div class="aviso" id="avisoHardy" style="display:none;">
+        <strong>Aviso:</strong> frequência do <strong>alelo</strong> (p, q) não é frequência do
+        <strong>genótipo</strong> (p², 2pq, q²). Confundir as duas é o erro mais comum nos exercícios.
+      </div>
+    </div>
+
+    <div id="condicoes" class="destaque" style="display:none; margin-top:12px;">
+      <strong>Condições do equilíbrio:</strong> a lei só vale se a população for grande,
+      os cruzamentos ocorrerem ao acaso e não houver seleção natural, mutação, migração
+      nem deriva genética. Quando alguma dessas condições falha, as frequências mudam:
+      é assim que a evolução acontece.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>O quadro de p e q</h3>
+    <div class="punnett" style="max-width:280px;">
+      <div class="cab"></div><div class="cab">p</div><div class="cab">q</div>
+      <div class="cab">p</div><div class="cel" id="h_cel1">p²</div><div class="cel" id="h_cel2">pq</div>
+      <div class="cab">q</div><div class="cel" id="h_cel3">pq</div><div class="cel" id="h_cel4">q²</div>
+    </div>
+    <p class="texto-didatico" style="text-align:center;">
+      Note que <strong>pq aparece duas vezes</strong> (p do pai com q da mãe, e q do pai com p da mãe).
+      Por isso os heterozigotos somam <strong>2pq</strong>.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>Comentário para o caso "conheço q²"</h3>
+    <p class="texto-didatico">
+      Você partiu da frequência dos homozigotos recessivos (q²), pois são os únicos que podem
+      ser identificados pelo fenótipo. Daí: q = √q², p = 1 − q, e os <strong>heterozigotos (2pq)</strong>
+      são calculados. Repare como os portadores são muito mais comuns do que os afetados.
+    </p>
+  </div>
+</div>
+
+<!-- ================= ABA 3 · TEORIA & QUIZ ================= -->
+<div id="teoria" class="painel">
+
+  <div class="card">
+    <h2>Como usar</h2>
+    <p class="texto-didatico">
+      Escolha o genótipo de cada genitor. Cada genitor forma gametas com <strong>um</strong>
+      dos seus dois alelos (1ª Lei de Mendel). Depois, toque em <em>Calcule</em> para ver
+      todas as combinações possíveis na fecundação.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Comentário por tipo de cruzamento</h2>
+    <table>
+      <thead><tr><th>Cruzamento</th><th>Resultado</th><th>Texto</th></tr></thead>
+      <tbody>
+        <tr><td>AA × AA</td><td>100% AA</td><td>Não há variabilidade: todos os descendentes são iguais e homozigotos dominantes.</td></tr>
+        <tr><td>AA × Aa</td><td>1 AA : 1 Aa</td><td>Todos mostram o fenótipo dominante, mas metade carrega o alelo recessivo sem manifestá-lo.</td></tr>
+        <tr><td>AA × aa</td><td>100% Aa</td><td>É a geração F1 de Mendel: todos híbridos, todos com fenótipo dominante.</td></tr>
+        <tr><td>Aa × Aa</td><td>1 AA : 2 Aa : 1 aa</td><td>O recessivo reaparece em 1/4. É a clássica geração F2 de Mendel.</td></tr>
+        <tr><td>Aa × aa</td><td>1 Aa : 1 aa</td><td>É o <strong>cruzamento-teste</strong>: a proporção 1:1 revela que o genitor dominante era heterozigoto.</td></tr>
+        <tr><td>aa × aa</td><td>100% aa</td><td>Só o alelo recessivo está presente; todos os descendentes mostram o fenótipo recessivo.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Mensagens de erro didáticas</h2>
+    <ul class="texto-didatico" style="line-height:1.8;">
+      <li><strong>Caixa vazia:</strong> "Falta um alelo. Cada indivíduo diploide tem <strong>dois</strong> alelos por gene."</li>
+      <li><strong>Letras diferentes:</strong> "Use a mesma letra para o mesmo gene: maiúscula para o dominante, minúscula para o recessivo."</li>
+      <li><strong>Mais de uma letra:</strong> "Cada caixa recebe <strong>um</strong> alelo."</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Teste você</h2>
+    <div class="mini-quiz">
+      <p><strong>1.</strong> Dos descendentes de <strong>Aa × Aa</strong>, que fração tem o genótipo Aa?</p>
+      <details><summary>Ver resposta</summary><p>1/2 (metade dos descendentes são heterozigotos).</p></details>
+    </div>
+    <div class="mini-quiz">
+      <p><strong>2.</strong> Um cruzamento resultou em 1:1 de fenótipos. Quais podem ser os genótipos dos pais?</p>
+      <details><summary>Ver resposta</summary><p>Aa × aa (cruzamento-teste).</p></details>
+    </div>
+    <div class="mini-quiz">
+      <p><strong>3.</strong> Em uma população, q² = 0,04. Qual a frequência de heterozigotos?</p>
+      <details><summary>Ver resposta</summary><p>q = 0,2; p = 0,8; 2pq = 0,32, ou seja, 32%.</p></details>
+    </div>
+  </div>
+</div>
+
+<p class="rodape">Material didático · 1ª Lei de Mendel &amp; Hardy-Weinberg</p>
+
+<script>
+/* ================= UTILIDADES ================= */
+function abrirAba(id, btn){
+  document.querySelectorAll('.painel').forEach(p => p.classList.remove('ativo'));
+  document.querySelectorAll('.abas button').forEach(b => b.classList.remove('ativa'));
+  document.getElementById(id).classList.add('ativo');
+  btn.classList.add('ativa');
+}
+
+function maiuscula(t){ return t.toUpperCase(); }
+function minuscula(t){ return t.toLowerCase(); }
+
+// Ordena: maiúscula primeiro (regra do pseudocódigo)
+function ordenar(a, b){
+  return (a === a.toUpperCase()) ? (a + b) : (b + a);
+}
+
+// Fração a partir da contagem (0 a 4)
+function fracao(n){
+  return ["0", "1/4", "1/2", "3/4", "1"][n] || String(n) + "/4";
+}
+
+function mostrarErro(id, msg){
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('visivel');
+}
+function limparErro(id){
+  const el = document.getElementById(id);
+  el.textContent = "";
+  el.classList.remove('visivel');
+}
+
+/* ================= PUNNETT ================= */
+function alelosDoTipo(tipo, letra){
+  const L = maiuscula(letra), l = minuscula(letra);
+  if (tipo === 'Homozigoto dominante') return [L, L];
+  if (tipo === 'Heterozigoto')         return [L, l];
+  return [l, l];
+}
+
+function sincronizarSpinners(){
+  aplicarSpinner('cima');
+  aplicarSpinner('esq');
+}
+
+function aplicarSpinner(qual){
+  const letra = document.getElementById('txtLetra').value || 'A';
+  const tipo  = document.getElementById(qual === 'cima' ? 'spCima' : 'spEsq').value;
+  const a = alelosDoTipo(tipo, letra);
+  if (qual === 'cima'){ document.getElementById('T1').value = a[0]; document.getElementById('T2').value = a[1]; }
+  else                { document.getElementById('T3').value = a[0]; document.getElementById('T4').value = a[1]; }
+}
+
+function validarPunnett(){
+  limparErro('erroPunnett');
+  const ids = ['T1','T2','T3','T4'];
+  for (const id of ids){
+    const v = document.getElementById(id).value.trim();
+    if (v === ''){ mostrarErro('erroPunnett', 'Falta um alelo. Cada indivíduo diploide tem dois alelos por gene.'); return null; }
+    if (v.length !== 1){ mostrarErro('erroPunnett', 'Cada caixa recebe um alelo (uma única letra).'); return null; }
+    if (!/^[A-Za-z]$/.test(v)){ mostrarErro('erroPunnett', 'Use apenas letras (A–Z ou a–z).'); return null; }
+  }
+  const letras = ids.map(id => document.getElementById(id).value.toLowerCase());
+  const primeira = letras[0];
+  if (!letras.every(l => l === primeira)){
+    mostrarErro('erroPunnett', 'Use a mesma letra para o mesmo gene: maiúscula para o dominante, minúscula para o recessivo.');
+    return null;
+  }
+  return ids.map(id => document.getElementById(id).value.trim());
+}
+
+function calcularPunnett(){
+  const vals = validarPunnett();
+  if (!vals) return;
+  const [T1, T2, T3, T4] = vals;
+
+  // 1. monta as 4 células (linha por linha) e conta
+  const CELULAS = [];
+  const CONTAGEM = {};
+  for (const f of [T3, T4]){          // linhas (genitor da esquerda)
+    for (const m of [T1, T2]){        // colunas (genitor de cima)
+      const g = ordenar(m, f);
+      CELULAS.push(g);
+      CONTAGEM[g] = (CONTAGEM[g] || 0) + 1;
+    }
+  }
+
+  // 2. escreve no quadro
+  document.getElementById('cab1').textContent = T1;
+  document.getElementById('cab2').textContent = T2;
+  document.getElementById('cab3').textContent = T3;
+  document.getElementById('cab4').textContent = T4;
+  for (let i = 0; i < 4; i++){
+    const el = document.getElementById('cel' + (i + 1));
+    el.textContent = CELULAS[i];
+    el.classList.remove('dom', 'rec');
+    el.classList.add(CELULAS[i][0] === CELULAS[i][0].toUpperCase() ? 'dom' : 'rec');
+  }
+
+  // 3. frequências por genótipo (ordem fixa AA, Aa, aa)
+  const L = maiuscula(T1), l = minuscula(T1);
+  const ordem = [L + L, L + l, l + l];
+  let lista = '';
+  for (const g of ordem){
+    const n = CONTAGEM[g] || 0;
+    if (n > 0){
+      lista += `<div class="linha"><span>${g}</span><b>${fracao(n)} (${n * 25}%)</b></div>`;
+    }
+  }
+  document.getElementById('listaGenotipos').innerHTML = lista;
+
+  // 4. razão genotípica
+  const partes = [];
+  for (const g of ordem){ const n = CONTAGEM[g] || 0; if (n > 0) partes.push(n + ' ' + g); }
+  document.getElementById('razaoGeno').textContent = partes.join(' : ') || '—';
+
+  // 5. fenótipo
+  let dom = 0;
+  for (const g of CELULAS){ if (g[0] === g[0].toUpperCase()) dom++; }
+  const rec = 4 - dom;
+  document.getElementById('razaoFeno').textContent = `${dom} dominante : ${rec} recessivo`;
+
+  // 6. comentário por tipo de cruzamento
+  const comentario = comentarioCruzamento(T1, T2, T3, T4, L, l);
+  document.getElementById('comentarioCruzamento').textContent = comentario;
+
+  // 7. passo a passo
+  document.getElementById('passoAPasso').innerHTML = `
+    <p><strong>Passo 1 – Gametas.</strong> O genitor ${T3}${T4} forma gametas ${T3} e ${T4}.
+       O genitor ${T1}${T2} forma gametas ${T1} e ${T2}.</p>
+    <p><strong>Passo 2 – Fecundação.</strong> Qualquer gameta de um genitor pode se unir a qualquer
+       gameta do outro. Por isso o quadro tem 4 combinações.</p>
+    <p><strong>Passo 3 – Contagem.</strong> Genótipos obtidos: ${partes.join(' : ')}.</p>
+    <p><strong>Passo 4 – Fenótipo.</strong> Como ${L} é dominante sobre ${l}, quem tem pelo menos
+       um ${L} mostra o fenótipo dominante. Resultado: ${dom} dominante : ${rec} recessivo.</p>
+  `;
+
+  document.getElementById('resPunnett').style.display = 'block';
+}
+
+function comentarioCruzamento(T1, T2, T3, T4, L, l){
+  const a = (T1 + T2).split('').sort().join('');
+  const b = (T3 + T4).split('').sort().join('');
+  const par = [a, b].sort().join('|');
+  const map = {
+    [L+L+'|'+L+L]: 'Não há variabilidade: todos os descendentes são iguais e homozigotos dominantes.',
+    [L+L+'|'+L+l]: 'Todos mostram o fenótipo dominante, mas metade carrega o alelo recessivo sem manifestá-lo.',
+    [L+L+'|'+l+l]: 'É a geração F1 de Mendel: todos híbridos, todos com fenótipo dominante.',
+    [L+l+'|'+L+l]: 'O recessivo reaparece em 1/4. É a clássica geração F2 de Mendel.',
+    [L+l+'|'+l+l]: 'É o cruzamento-teste: a proporção 1:1 revela que o genitor dominante era heterozigoto.',
+    [l+l+'|'+l+l]: 'Só o alelo recessivo está presente; todos os descendentes mostram o fenótipo recessivo.'
+  };
+  return map[par] || 'Cruzamento calculado.';
+}
+
+function limparPunnett(){
+  ['T1','T2','T3','T4'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('spCima').selectedIndex = 0;
+  document.getElementById('spEsq').selectedIndex = 0;
+  document.getElementById('resPunnett').style.display = 'none';
+  document.getElementById('passoAPasso').innerHTML = '<p>Escolha os genótipos e toque em <em>Calcule</em> para ver a explicação.</p>';
+  limparErro('erroPunnett');
+  for (let i = 1; i <= 4; i++){
+    const el = document.getElementById('cel' + i);
+    el.textContent = '—';
+    el.classList.remove('dom', 'rec');
+  }
+  document.getElementById('cab1').textContent = '—';
+  document.getElementById('cab2').textContent = '—';
+  document.getElementById('cab3').textContent = '—';
+  document.getElementById('cab4').textContent = '—';
+}
+
+/* ================= HARDY-WEINBERG ================= */
+function arredondar(x, casas){
+  const f = Math.pow(10, casas);
+  return Math.round(x * f) / f;
+}
+
+function calcularHardy(){
+  limparErro('erroHardy');
+  const modo = document.getElementById('spModo').value;
+  let v = parseFloat(document.getElementById('txtValor').value.replace(',', '.'));
+
+  if (isNaN(v)){ mostrarErro('erroHardy', 'Digite um valor numérico.'); return; }
+  if (v > 1) v = v / 100;          // aceita "30" como 30%
+  if (v < 0 || v > 1){ mostrarErro('erroHardy', 'Digite um valor entre 0 e 1 (ou 0% e 100%).'); return; }
+
+  let p, q;
+  if (modo === 'p'){ p = v; q = 1 - p; }
+  else if (modo === 'q'){ q = v; p = 1 - q; }
+  else { q = Math.sqrt(v); p = 1 - q; }   // q²
+
+  const AA = p * p, Aa = 2 * p * q, aa = q * q;
+  const soma = AA + Aa + aa;   // deve ser 1
+
+  document.getElementById('h_p').textContent  = arredondar(p, 4);
+  document.getElementById('h_q').textContent  = arredondar(q, 4);
+  document.getElementById('h_AA').textContent = arredondar(AA * 100, 2) + '%';
+  document.getElementById('h_Aa').textContent = arredondar(Aa * 100, 2) + '%';
+  document.getElementById('h_aa').textContent = arredondar(aa * 100, 2) + '%';
+  document.getElementById('h_soma').textContent = arredondar(soma * 100, 2) + '%';
+
+  const N = parseFloat(document.getElementById('txtPopulacao').value);
+  const linhaIndiv = document.getElementById('linhaIndiv');
+  if (!isNaN(N) && N > 0){
+    document.getElementById('h_indiv').textContent = arredondar(N * Aa, 0) + ' indivíduos';
+    linhaIndiv.style.display = 'flex';
+  } else {
+    linhaIndiv.style.display = 'none';
+  }
+
+  let comentario = '';
+  if (modo === 'q2'){
+    comentario = `Você partiu de q² = ${arredondar(v, 4)}. Então q = √q² = ${arredondar(q, 4)}, ` +
+                 `p = 1 − q = ${arredondar(p, 4)} e 2pq = ${arredondar(Aa, 4)} ` +
+                 `(${arredondar(Aa * 100, 2)}% de heterozigotos). ` +
+                 `Repare como os portadores são muito mais comuns do que os afetados.`;
+  } else {
+    comentario = `p = ${arredondar(p, 4)} e q = ${arredondar(q, 4)}. ` +
+                 `As frequências genotípicas são p² = ${arredondar(AA, 4)}, ` +
+                 `2pq = ${arredondar(Aa, 4)} e q² = ${arredondar(aa, 4)}.`;
+  }
+  document.getElementById('comentarioHardy').textContent = comentario;
+  document.getElementById('avisoHardy').style.display = 'block';
+
+  // Atualiza o mini-quadro com os valores calculados
+  const fmt = x => arredondar(x * 100, 2) + '%';
+  document.getElementById('h_cel1').textContent = 'p² = ' + fmt(AA);
+  document.getElementById('h_cel2').textContent = 'pq = ' + fmt(p * q);
+  document.getElementById('h_cel3').textContent = 'pq = ' + fmt(q * p);
+  document.getElementById('h_cel4').textContent = 'q² = ' + fmt(aa);
+
+  document.getElementById('resHardy').style.display = 'block';
+}
+
+function limparHardy(){
+  document.getElementById('txtValor').value = '';
+  document.getElementById('txtPopulacao').value = '';
+  document.getElementById('resHardy').style.display = 'none';
+  limparErro('erroHardy');
+  document.getElementById('h_cel1').textContent = 'p²';
+  document.getElementById('h_cel2').textContent = 'pq';
+  document.getElementById('h_cel3').textContent = 'pq';
+  document.getElementById('h_cel4').textContent = 'q²';
+}
+
+function toggleCondicoes(){
+  const el = document.getElementById('condicoes');
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+/* ================= INICIALIZAÇÃO ================= */
+// Já começa com os spinners aplicados (AA × AA)
+sincronizarSpinners();
+</script>
+</body>
+</html>
